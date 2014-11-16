@@ -7,16 +7,15 @@ output: html_document
 
 ##Introduction
 
-This report was put together to answer the questions required to pass peer assessment for the first project of the Data Science curriculumn's Reproducible Research course.  To make it easy on my peer graders, I organized this to follow the rubric question set that we, as peers, need to use for grading. 
+This report was put together to answer the questions required to pass peer assessment for the first project of the Data Science curriculumn's Reproducible Research course.  To make it easy on my peer graders, I organized this to follow the rubric question set that we, as peers, need to use for grading.
 
 Libraries used in R for this report are loaded here to highlight our dependencies and to allow the library feed back to be reported.
 
-```{r, echo=TRUE}
 
+```r
 library(lubridate)
 library(dplyr)
 library(lattice)
-
 ```
 ##GitHub Questions  
 
@@ -26,7 +25,8 @@ The GitHub portion of the rubric is outside this report.  Please feel free to ev
 
 Following is the code used to read in the data set.  I check to see if I have the data, else I pull it down from the class website and unzip it.  I then read it into the data frame named activity. I then cast it to a data frame table for easy grouping.
 
-```{r, echo=TRUE}
+
+```r
 # Download the data and unzip it if it hasn't yet been downloaded and read it into activity
 
 fileLocation <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -39,7 +39,6 @@ if (!file.exists(fileName)){unzip(zipFileName, overwrite=TRUE,exdir="./data")}
 
 activity<-read.csv(fileName)
 act_dft<-tbl_df(activity)
-
 ```
 
 ##Mean Total Number of Steps Taken Each Day
@@ -50,7 +49,8 @@ Note that the missing values in the dataset have been ignored for this section o
 
 To generate the histogram, we need to group the data by day. I used dplyr to massage the data.  The R code follows.
 
-```{r, echo=TRUE}
+
+```r
 # Group by days
 
 dayTotals<-group_by(act_dft,date)%>%
@@ -73,10 +73,24 @@ abline(h=stepMedian,
 legend("top", col = c("black", "blue", "red"), 
        lty=1,
        legend = c("Total Steps", "Mean Steps","Median Steps"))
+```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
+```r
 print(paste0("The Daily average step count for the period analized is: ",stepMean))
+```
+
+```
+## [1] "The Daily average step count for the period analized is: 10766.1886792453"
+```
+
+```r
 print(paste0("The Daily median step count for the period analized is: ",stepMedian))
-                    
+```
+
+```
+## [1] "The Daily median step count for the period analized is: 10765"
 ```
 
 ##Average Daily Activity Pattern
@@ -85,7 +99,8 @@ In this section, we will take a look at the average number of steps taken for ea
 
 Note that the missing values in the dataset have been ignored for this section of the report.
 
-```{r, echo=TRUE}
+
+```r
 # Group by intervals
 
 timeAverages<-group_by(act_dft,interval)%>%
@@ -104,7 +119,11 @@ plot(strptime(time,format="%H%M"),timeAverages$ave,
      xlab="Time(00:00 to 23:55", 
      ylab="Average Steps per 5-Min Time Interval", 
      main="Average Steps per 5-Min Time Interval")
+```
 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+```r
 # Max average value and time interval, mod time interval to a time value and print it
 stepMax<-arrange(timeAverages, desc(ave))[1,]
 stepMax[1]<-as.character(stepMax[1])
@@ -115,7 +134,10 @@ stepMax[1]<-paste0(hour(strptime(stepMax[1],format="%H%M")),
                    ":",minute(strptime(stepMax[1],format="%H%M")))
 print(paste0("The Maximum 5-Minute Interval mean occurs at: ", 
              stepMax[1], " with a step count average of: ", stepMax[2]))
-                    
+```
+
+```
+## [1] "The Maximum 5-Minute Interval mean occurs at: 8:35 with a step count average of: 206.169811320755"
 ```
 
 ## Input Missing Values
@@ -130,7 +152,8 @@ In this section, we will take a look at the missing step observations. I will:
 As you can see from comparing the histograms, the daily totals only increase where we added data. Since we inserted the averge values from all the intevals for the missing data, the mean value did not change; however, the median value moved closer to the mean indicating that our data is becoming more Gausian.
 
 
-```{r, echo=TRUE}
+
+```r
 # generate index where NA values are
 activity2<-activity
 logicVector<-is.na(activity2$steps)
@@ -139,6 +162,13 @@ logicVector<-is.na(activity2$steps)
 print(paste0("The total number of missing step values in the dataset is: ",
              sum(logicVector)
              ))
+```
+
+```
+## [1] "The total number of missing step values in the dataset is: 2304"
+```
+
+```r
 # fill in missing data using mean value for that interval
 activity2[logicVector,1]<-mean(timeAverages$ave)
 
@@ -163,10 +193,24 @@ abline(h=stepMedian,
 legend("top", col = c("black", "blue", "red"), 
        lty=1,
        legend = c("Total Steps", "Mean Steps","Median Steps"))
+```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
+```r
 print(paste0("The Daily average step count for the period analized is: ",stepMean))
+```
+
+```
+## [1] "The Daily average step count for the period analized is: 10766.1886792453"
+```
+
+```r
 print(paste0("The Daily median step count for the period analized is: ",stepMedian))
-                    
+```
+
+```
+## [1] "The Daily median step count for the period analized is: 10766.1886792453"
 ```
 
 ## Activity Patterns Between Weekdays and Weekends
@@ -179,8 +223,8 @@ In this section, we will take a look at Weekday versus weekend activity. I will:
 
 If you look at the plot, it looks like the majority of walking is in the morning, probably before work and shows a little increase right after work time; but for the weekend, it looks like the activity is more throughout the day.  For both plots, you  see the low activity level during the standard sleep time.
 
-```{r, echo=TRUE}
 
+```r
 # Add a day column for weekday/weekend IDing
 wDay<-mutate(act2_dft,day=weekdays(ymd(date)))
 wDay[wDay$day=="Saturday",4]<-"weekend"
@@ -205,6 +249,6 @@ xyplot(ave~interval|day, data=wD2,
        xlab="Time(00:00 to 23:55)", 
        ylab="Average Steps per 5-Min Time Interval", 
        main="Average Steps per 5-Min Time Interval")
-
-                    
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
